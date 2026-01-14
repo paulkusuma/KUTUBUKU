@@ -9,10 +9,21 @@ class BookController extends Controller
 {
     //
     // Menampilkan daftar buku
-    public function index()
+    public function index(Request $request)
     {
-        // Fitur pencarian akan kita buat rentan nanti
-        $books = Book::orderBy('title')->get();
+
+        // Ini adalah VERSI AMAN menggunakan Eloquent
+        $search = $request->input('search');
+
+        $books = Book::query();
+
+        if ($search) {
+            $books->where('title', 'like', '%' . $search . '%')
+                ->orWhere('author', 'like', '%' . $search . '%');
+        }
+
+        $books = $books->orderBy('title')->get();
+
         return view('books.index', compact('books'));
     }
 
