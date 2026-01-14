@@ -55,6 +55,20 @@ A01:2021 - Broken Access Control
     User biasa dapat melihat dashboard admin yang berisi data sensitif.
     Remediasi: Lihat branch main. Tambahkan middleware khusus untuk memeriksa role, misalnya ->middleware('auth', 'role:admin').
 
+A05:2021 - Injection
+
+1. SQL Injection (SQLi)
+
+    Lokasi: app/Http/Controllers/BookController.php pada metode index.
+    Deskripsi: Aplikasi menggabungkan input pengguna secara langsung ke dalam query SQL mentah tanpa sanitasi atau penggunaan prepared statements. Ini memungkinkan penyerang untuk memanipulasi logika query untuk mengakses atau memodifikasi data yang seharusnya tidak dapat diakses.
+    PoC / Eksploitasi:
+    Login sebagai user mana pun.
+    Navigasi ke halaman daftar buku (/books).
+    Di kotak pencarian, masukkan payload SQL Injection: ' OR '1'='1
+    Klik tombol "Cari".
+    Hasil: Query SQL dieksekusi menjadi SELECT \* FROM books WHERE title LIKE '%' OR '1'='1' .... Karena kondisi '1'='1' selalu benar, query akan mengembalikan SEMUA BUKU dari database, mengabaikan logika pencarian.
+    Remediasi: Lihat branch main. Gunakan Laravel Eloquent ORM atau Query Builder dengan metode where(), yang secara otomatis menggunakan parameter binding untuk mencegah SQL Injection. Contoh: Book::where('title', 'like', '%' . $search . '%')->get();.
+
 Cara Menggunakan Lab Ini
 
     Pastikan Anda berada di branch staging (git checkout staging).
