@@ -1,66 +1,67 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+KUTUBUKU - Vulnerable Web Application
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+    PERINGATAN PENTING: Proyek ini adalah aplikasi web yang sengaja dibuat rentan untuk tujuan pendidikan dan pelatihan keamanan siber. JANGAN PERNAH menggunakan kode ini di lingkungan produksi atau aplikasi sungguhan.
 
-## About Laravel
+KUTUBUKU adalah toko buku online sederhana yang dibangun dengan framework Laravel. Aplikasi ini mengandung beberapa kerentanan dari daftar OWASP Top 10 2021 yang dapat dieksploitasi untuk pembelajaran.
+Setup
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+    Clone Repository
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+    git clone https://github.com/paulkusuma/KUTUBUKU.gitcd KUTUBUKU
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+    Install Dependencies
 
-## Learning Laravel
+    composer installnpm installnpm run build
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+    Setup Environment
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+    cp .env.example .envphp artisan key:generate
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+    Sesuaikan konfigurasi database di file .env.
 
-## Laravel Sponsors
+    Run Database Migrations and Seeders
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+    php artisan migratephp artisan db:seed
 
-### Premium Partners
+    Run Application
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+    php artisan serve
 
-## Contributing
+    Aplikasi akan tersedia di http://127.0.0.1:8000.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Dokumentasi Kerentanan
 
-## Code of Conduct
+Berikut adalah daftar kerentanan yang ada di aplikasi ini.
+A01:2021 - Broken Access Control
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1. Insecure Direct Object Reference (IDOR)
 
-## Security Vulnerabilities
+    Lokasi: app/Http/Controllers/ProfileController.php:34
+    Deskripsi: Aplikasi mempercayai parameter ID dari URL untuk mengambil data profil pengguna tanpa memvalidasi apakah pengguna yang sedang login memiliki otoritas untuk melihat data tersebut.
+    PoC / Eksploitasi:
+    Login sebagai User A.
+    Akses profil User A di /profile/2.
+    Ubah URL secara manual menjadi /profile/3 (profil User B).
+    User A dapat melihat data profil User B.
+    Remediasi: Lihat branch main. Gunakan data dari user yang sedang login ($request->user()) alih-alih mengambil data berdasarkan ID dari input pengguna.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+2. Vertical Privilege Escalation
 
-## License
+    Lokasi: app/Http/Controllers/AdminController.php:17 dan routes/web.php:XX
+    Deskripsi: Endpoint /admin/dashboard tidak dilindungi oleh middleware yang memeriksa role pengguna. Semua pengguna yang sudah login dapat mengakses fungsi admin.
+    PoC / Eksploitasi:
+    Login sebagai user biasa.
+    Akses langsung URL /admin/dashboard.
+    User biasa dapat melihat dashboard admin yang berisi data sensitif.
+    Remediasi: Lihat branch main. Tambahkan middleware khusus untuk memeriksa role, misalnya ->middleware('auth', 'role:admin').
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Cara Menggunakan Lab Ini
+
+    Pastikan Anda berada di branch staging (git checkout staging).
+    Ikuti langkah-langkah eksploitasi yang dijelaskan di dokumentasi setiap kerentanan.
+    Untuk melihat versi kode yang aman, bandingkan dengan branch main (git diff main staging).
+    Jangan lupa untuk kembali ke branch dev (git checkout dev) jika ingin menambah fitur atau kerentanan baru dengan aman.
+
+Lisensi
+
+Proyek ini hanya untuk tujuan pendidikan.
