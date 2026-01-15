@@ -69,6 +69,16 @@ A05:2021 - Injection
     Hasil: Query SQL dieksekusi menjadi SELECT \* FROM books WHERE title LIKE '%' OR '1'='1' .... Karena kondisi '1'='1' selalu benar, query akan mengembalikan SEMUA BUKU dari database, mengabaikan logika pencarian.
     Remediasi: Lihat branch main. Gunakan Laravel Eloquent ORM atau Query Builder dengan metode where(), yang secara otomatis menggunakan parameter binding untuk mencegah SQL Injection. Contoh: Book::where('title', 'like', '%' . $search . '%')->get();.
 
+A07:2021 - Authentication Failures
+
+    Lokasi: app/Http/Controllers/RegisteredUserController.php pada metode store.
+    Deskripsi: Aplikasi mengizinkan pengguna untuk membuat kata sandi yang sangat lemah (misalnya, satu karakter), membuat akun rentan terhadap serangan tebak kata sandi (password guessing) dan serangan kamus (dictionary attack).
+    PoC / Eksploitasi:
+        Buka halaman pendaftaran.
+        Daftarkan akun baru dengan password "1" atau "123".
+        Hasil: Sistem menerima kata sandi yang sangat lemah.
+    Remediasi: Lihat branch main. Gunakan aturan password yang kuat, seperti yang disediakan oleh Rules\Password::defaults(), yang memerlukan panjang, kombinasi huruf besar/kecil, angka, dan simbol.
+
 Cara Menggunakan Lab Ini
 
     Pastikan Anda berada di branch staging (git checkout staging).
