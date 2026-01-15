@@ -44,4 +44,13 @@ Route::middleware('auth')->group(function () {
 // Route ini rentan karena hanya butuh login, tidak butuh role 'admin'
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
+// Route::get('/test-500', function () {
+//     $x = 1 / 0; // Ini akan menyebabkan error 500
+// });
+// SOLUSI PASTI: Catch-all route untuk memaksa 404 masuk ke Laravel
+// Route::any('/{any}', function () {
+//     // Kita lempar exception 404 secara manual, sehingga Laravel yang menanganinya
+//     throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException('Halaman tidak ditemukan.');
+// })->where('any', '.*');
+
 require __DIR__ . '/auth.php';
