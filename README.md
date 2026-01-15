@@ -69,6 +69,19 @@ A05:2021 - Injection
     Hasil: Query SQL dieksekusi menjadi SELECT \* FROM books WHERE title LIKE '%' OR '1'='1' .... Karena kondisi '1'='1' selalu benar, query akan mengembalikan SEMUA BUKU dari database, mengabaikan logika pencarian.
     Remediasi: Lihat branch main. Gunakan Laravel Eloquent ORM atau Query Builder dengan metode where(), yang secara otomatis menggunakan parameter binding untuk mencegah SQL Injection. Contoh: Book::where('title', 'like', '%' . $search . '%')->get();.
 
+A06:2021 - Insecure Design
+
+    Lokasi: app/Http/Controllers/CartController.php pada metode checkout dan resources/views/cart/index.blade.php.
+    Deskripsi: Logika bisnis cacat memungkinkan pengguna untuk memanipulasi data penting (seperti harga) saat proses checkout. Backend mempercayai data yang dikirim dari frontend tanpa melakukan validasi ulang terhadap sumber kebenaran (database atau session).
+    PoC / Eksploitasi:
+        Tambahkan item ke keranjang.
+        Buka Developer Tools, tab Network.
+        Klik "Checkout" dan intersepsi permintaan.
+        Di tab "Payload", ubah nilai total_price menjadi lebih rendah.
+        Kirim ulang request.
+        Hasil: Pembayaran berhasil diproses dengan harga yang telah dimanipulasi.
+    Remediasi: Lihat branch main. Backend harus selalu menghitung ulang total harga berdasarkan data di keranjang (session) dan mengabaikan nilai harga yang dikirim dari request.
+
 A07:2021 - Authentication Failures
 
     Lokasi: app/Http/Controllers/RegisteredUserController.php pada metode store.

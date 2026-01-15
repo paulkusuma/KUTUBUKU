@@ -23,12 +23,23 @@
                     @endforelse
 
                     @if(!empty($cart))
-                        <form action="{{ route('cart.checkout') }}" method="POST" class="mt-6">
-                            @csrf
-                            <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                                Checkout
-                            </button>
-                        </form>
+                            <!-- Hitung total harga di frontend untuk dikirim ke backend -->
+    @php
+        $totalPrice = 0;
+        foreach ($cart as $item) {
+            $totalPrice += $item['price'] * $item['quantity'];
+        }
+    @endphp
+
+    <form action="{{ route('cart.checkout') }}" method="POST" class="mt-6">
+        @csrf
+        <!-- !!! VULNERABILITY: INSECURE DESIGN !!! -->
+        <!-- Kirim total harga yang sudah dihitung di frontend sebagai input tersembunyi -->
+        <input type="hidden" name="total_price" value="{{ $totalPrice }}">
+        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+            Checkout
+        </button>
+    </form>
                     @endif
                 </div>
             </div>

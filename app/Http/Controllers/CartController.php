@@ -43,16 +43,25 @@ class CartController extends Controller
             return redirect()->route('cart.index')->with('error', 'Keranjang Anda kosong.');
         }
 
-        // !!! LOGIKA AMAN: Hitung ulang total harga di backend !!!
-        $totalPrice = 0;
-        foreach ($cart as $item) {
-            $totalPrice += $item['price'] * $item['quantity'];
-        }
+        // !!! VULNERABILITY: INSECURE DESIGN !!!
+        // Backend mempercayai total harga yang dikirim dari frontend tanpa validasi.
+        $totalPrice = $request->input('total_price'); // Diambil dari request!
 
         // Di dunia nyata, di sini akan ada logika pembayaran ke gateway, dll.
         // Untuk lab, kita cukup kosongkan keranjang dan tampilkan pesan sukses.
         Session::forget('cart');
 
         return view('cart.success', ['totalPrice' => $totalPrice]);
+        // // !!! LOGIKA AMAN: Hitung ulang total harga di backend !!!
+        // $totalPrice = 0;
+        // foreach ($cart as $item) {
+        //     $totalPrice += $item['price'] * $item['quantity'];
+        // }
+
+        // // Di dunia nyata, di sini akan ada logika pembayaran ke gateway, dll.
+        // // Untuk lab, kita cukup kosongkan keranjang dan tampilkan pesan sukses.
+        // Session::forget('cart');
+
+        // return view('cart.success', ['totalPrice' => $totalPrice]);
     }
 }
