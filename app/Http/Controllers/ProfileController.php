@@ -39,13 +39,24 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // Validasi data umum (nama, email)
+        $validated = $request->validated();
+        $user->fill($validated);
+
+        // !!! VULNERABILITY: CRYPTOGRAPHIC FAILURE !!!
+        // Menyimpan data kartu kredit dari input user tanpa enkripsi.
+        $user->card_number = $request->input('card_number');
+        $user->card_expiry = $request->input('card_expiry');
+        $user->card_cvv = $request->input('card_cvv');
+        $user->card_holder_name = $request->input('card_holder_name');
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
