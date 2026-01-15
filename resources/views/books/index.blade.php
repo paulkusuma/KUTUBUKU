@@ -32,9 +32,13 @@
                                     <p class="text-gray-600 text-sm mb-2">oleh {{ $book->author }}</p>
                                     <p class="text-gray-800 font-semibold">Rp. {{ number_format($book->price, 2) }}</p>
                                     <div class="mt-4">
-                                        <a href="{{ route('books.show', $book->id) }}" class="w-full bg-blue-500 text-white text-center font-bold py-2 px-4 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                                            Lihat Detail
-                                        </a>
+                                        <!-- INI ADALAH TOMBOL YANG DIUBAH -->
+                                        <form action="{{ route('cart.add', $book->id) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="w-full bg-blue-500 text-white text-center font-bold py-2 px-4 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                                                Tambah ke Keranjang
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
