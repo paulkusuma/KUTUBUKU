@@ -90,7 +90,6 @@ Mari kita gunakan analogi yang sederhana:
      A03 (Software Supply Chain Failure): Ini adalah penyakitnya. Aplikasi KUTUBUKU "sakit" karena menggunakan "obat" (dependency) yang salah.
      SSRF (Server-Side Request Forgery): Ini adalah gejalanya. Karena minum obat yang salah, aplikasi menjadi "linglung" dan melakukan hal-hal di luar kendali (mengunjungi URL sembarangan).
 
-
 Dalam Kode KUTUBUKU:
 
     Dependency-nya adalah file app/Services/VulnerableImageFetcher.php.
@@ -108,7 +107,6 @@ Dalam Kode KUTUBUKU:
          Ia mempercayai library tersebut dan memberinya input dari user ($imageUrl).
          Akibatnya, server KUTUBUKU menjadi korban serangan SSRF.
 
-
 Kesimpulan: A03 adalah penyebab utamanya (menggunakan dependency yang cacat), dan SSRF adalah dampak atau serangan yang terjadi karena penyebab utama tersebut. Tanpa dependency yang rentan, serangan SSRF melalui fitur ini tidak akan mungkin terjadi. 3. Tujuan Dependency dalam Aplikasi
 
 Pertanyaan "dependencynya untuk apa?" adalah kunci untuk memahami konteksnya.
@@ -125,12 +123,10 @@ Tujuannya adalah untuk memenuhi kebutuhan bisnis: Mencetak invoice yang terlihat
          Tugas library ini: "Diberikan URL, tolong ambilkan filenya dan kembalikan isinya."
          Ini adalah tugas yang umum, jadi wajar developer menggunakan library yang sudah ada daripada membuat dari nol.
 
-
 Di sinilah letak kesalahannya:
 
      Pilihan yang Salah: Developer memilih library VulnerableImageFetcher (yang kita pura-pura ada) tanpa mengecek reputasinya atau mengetahui bahwa ia memiliki celah SSRF.
      Pilihan yang Benar: Seharusnya developer menggunakan library yang aman, atau membuat fungsi sendiri dengan validasi yang ketat (misalnya, hanya boleh mengambil URL dari domain cdn.kutubuku.test).
-
 
 Jadi, dependency-nya punya tujuan yang sah dan penting bagi bisnis, tetapi karena Software Supply Chain Failure (memilih dependency yang salah), tujuan tersebut disalahgunakan oleh penyerang.
 
@@ -250,6 +246,20 @@ A08:2025 - Software or Data Integrity Failures
     Lihat Hasilnya:
     Di halaman tersebut, Anda akan melihat kode JavaScript berbahaya Anda yang sekarang tersimpan dan di-hosting oleh server KUTUBUKU.
     Ini membuktikan bahwa server KUTUBUKU telah berhasil dieksploitasi untuk menyimpan file berbahaya. Penyerang sekarang bisa menggunakan file ini untuk melancarkan serangan lebih lanjut.
+
+A09:2025 - Security Logging and Alerting Failures
+
+1. Tidak Adanya Log untuk Kejadian Keamanan
+   Pencatatan Informasi Sensitif ke Log File (CWE-532)
+   Lokasi: app/Http/Controllers/ProfileController.php (metode updatePayment).
+   Deskripsi: Aplikasi tidak hanya gagal mencatat kejadian keamanan, tetapi juga melakukan kesalahan sebaliknya: mencatat informasi yang terlalu sensitif. Saat user memperbarui informasi pembayaran, aplikasi mencatat SEMUA data request, termasuk nomor kartu kredit dan CVV, ke dalam file log teks biasa.
+   PoC / Eksploitasi:
+   Login dan buka halaman profil.
+   Isi form "Informasi Pembayaran" dengan data kartu kredit.
+   Klik "Simpan Pembayaran".
+   Buka file log di storage/logs/laravel.log.
+   Hasil: Nomor kartu kredit, CVV, dan data sensitif lainnya akan terlihat jelas dalam format teks biasa di file log.
+   Remediasi: Lihat branch main. Jangan pernah mencatat informasi sensitif seperti password, nomor kartu kredit, atau CVV ke dalam log. Jika perlu mencatat request untuk debugging, pastikan untuk menyaring (filter) atau menghapus data sensitif sebelum dicatat.
 
 A10:2025 - Mishandling of Exceptional Conditions
 

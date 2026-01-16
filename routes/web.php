@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CartController;
+use Illuminate\Support\Facades\Log;
 
 
 /*
@@ -20,6 +21,13 @@ use App\Http\Controllers\CartController;
 
 // Route::get('/', function () {
 //     return view('welcome');
+// });
+
+// // --- TES LOGGING ---
+// Route::get('/test-log', function () {
+//     Log::info('===== INI ADALAH TES LOGGING =====');
+//     Log::error('===== INI ADALAH TES LOGGING SEBAGAI ERROR =====');
+//     return 'Logging test has been executed. Please check your storage/logs/laravel.log file.';
 // });
 
 Route::get('/', function () {
@@ -39,7 +47,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Route baru khusus untuk pembayaran
+    // Route::patch('/profile/payment', action: [ProfileController::class, 'updatePayment'])->name('profile.payment.update');
     Route::patch('/profile/payment', [ProfileController::class, 'updatePayment'])->name('profile.payment.update');
+
 
     // Route untuk buku (aman)
     Route::get('/books', [BookController::class, 'index'])->name('books.index');

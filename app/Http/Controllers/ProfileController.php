@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
 {
@@ -61,6 +62,7 @@ class ProfileController extends Controller
      */
     public function updatePayment(Request $request): RedirectResponse
     {
+        // dd($request->all(), 'Jika Anda melihat ini, berarti metode updatePayment dipanggil!');
         // Validasi khusus untuk data pembayaran
         $request->validate([
             'card_holder_name' => 'required|string|max:255',
@@ -70,6 +72,11 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        // !!! VULNERABILITY: CWE-532 - INSERTION OF SENSITIVE INFO INTO LOG FILE !!!
+        // Untuk tujuan debugging, developer mencatat SEMUA data request, termasuk informasi kartu kredit.
+        Log::info('Payment data received:', $request->all());
+
 
         // !!! VULNERABILITY: CRYPTOGRAPHIC FAILURE !!!
         // Menyimpan data kartu kredit dari input user tanpa enkripsi.
