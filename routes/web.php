@@ -50,6 +50,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/cart/add/{book}', [CartController::class, 'addToCart'])->name('cart.add');
     Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 
+    // Route untuk update software (rentan)
+    Route::get('/admin/update', [AdminController::class, 'showUpdateForm'])->name('admin.update.form');
+    Route::post('/admin/update', [AdminController::class, 'performUpdate'])->name('admin.update.perform');
 });
 
 // Route ini rentan karena hanya butuh login, tidak butuh role 'admin'

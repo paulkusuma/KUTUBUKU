@@ -10,6 +10,15 @@
             <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                 <p class="text-red-800 font-semibold">PERINGATAN: Halaman ini seharusnya hanya untuk Admin!</p>
             </div>
+             <!-- TOMBOL PEMBARUAN BARU -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <h4 class="text-yellow-800 font-semibold mb-2">Pembaruan Sistem</h4>
+                <p class="text-yellow-700 text-sm mb-3">Periksa dan terapkan pembaruan perangkat lunak terbaru.</p>
+                <a href="{{ route('admin.update.form') }}" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
+                    Cek Pembaruan
+                </a>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <h3 class="text-lg font-bold mb-4">Data Semua Pengguna</h3>
