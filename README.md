@@ -32,6 +32,7 @@ Setup
 Dokumentasi Kerentanan
 
 Berikut adalah daftar kerentanan yang ada di aplikasi ini.
+
 A01:2021 - Broken Access Control
 
 1. Insecure Direct Object Reference (IDOR)
@@ -54,6 +55,18 @@ A01:2021 - Broken Access Control
     Akses langsung URL /admin/dashboard.
     User biasa dapat melihat dashboard admin yang berisi data sensitif.
     Remediasi: Lihat branch main. Tambahkan middleware khusus untuk memeriksa role, misalnya ->middleware('auth', 'role:admin').
+
+A02:2025 - Security Misconfiguration
+
+1. Debug Mode Enabled in Production
+
+    Lokasi: File .env
+    Deskripsi: Aplikasi dikonfigurasi dengan APP_DEBUG=true. Di lingkungan produksi, ini adalah kesalahan fatal. Ini menyebabkan aplikasi menampilkan pesan error detail, termasuk stack trace dan variabel lingkungan (seperti password database dan API key) kepada siapa saja yang memicu kesalahan, bahkan kesalahan sepele sekalipun.
+    PoC / Eksploitasi:
+    Akses URL yang sengaja dibuat untuk menyebabkan error, misalnya /debug-error. Route ini sengaja dibuat untuk memicu DivisionByZeroError.
+    Halaman akan menampilkan halaman error detail dari Laravel/Ignition.
+    Di bagian "Environment" atau "Context", penyerang dapat melihat semua kredensial sensitif yang disimpan dalam variabel lingkungan .env, seperti DB_PASSWORD, APP_KEY, dll.
+    Remediasi: Lihat branch main. Pastikan APP_DEBUG diset ke false di lingkungan produksi. Selain itu, buat halaman error kustom (resources/views/errors/500.blade.php) yang ramah pengguna dan tidak membocorkan informasi apa pun.
 
 A04:2021 - Cryptographic Failures
 

@@ -55,6 +55,12 @@ Route::middleware('auth')->group(function () {
 // Route ini rentan karena hanya butuh login, tidak butuh role 'admin'
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
+// Route untuk memicu error demi demonstrasi A02
+Route::get('/debug-error', function () {
+    // Memicu error "Division by zero"
+    return 1 / 0;
+});
+
 // Route::get('/test-500', function () {
 //     $x = 1 / 0; // Ini akan menyebabkan error 500
 // });
