@@ -89,6 +89,14 @@
                     </div>
                 </form>
             </div>
+            <div class="p-4 sm:p-8 bg-white shadow-sm rounded-lg">
+    <header>
+        <h2 class="text-lg font-medium text-gray-900">Lainnya</h2>
+    </header>
+    <div class="mt-4">
+        <a href="{{ route('profile.avatar', $user->id) }}" target="_blank">Lihat Avatar Saya</a>
+    </div>
+</div>
         </div>
     </div>
 </x-app-layout>

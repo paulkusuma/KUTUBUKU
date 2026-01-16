@@ -53,6 +53,9 @@ Route::middleware('auth')->group(function () {
     // Route untuk update software (rentan)
     Route::get('/admin/update', [AdminController::class, 'showUpdateForm'])->name('admin.update.form');
     Route::post('/admin/update', [AdminController::class, 'performUpdate'])->name('admin.update.perform');
+
+    // Route untuk melihat avatar user (rentan)
+    Route::get('/profile/{id}/avatar', [ProfileController::class, 'showAvatar'])->name('profile.avatar');
 });
 
 // Route ini rentan karena hanya butuh login, tidak butuh role 'admin'

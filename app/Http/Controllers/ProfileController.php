@@ -82,6 +82,24 @@ class ProfileController extends Controller
 
         return Redirect::route('profile.edit', $user->id)->with('status', 'payment-updated');
     }
+
+
+    /**
+     * Tampilkan avatar user (KERENTANAN ADA DI SINI).
+     */
+    public function showAvatar($id)
+    {
+        // !!! VULNERABILITY: A10 - MISHANDLING EXCEPTIONS !!!
+        // Kita mencoba mengakses file secara langsung tanpa memeriksa apakah file itu ada.
+        // Jika file tidak ada, Laravel akan memunculkan error yang menampilkan path lengkap server.
+        $avatarPath = public_path('avatars/' . $id . '.png');
+
+        // Cara yang salah: langsung membuka file tanpa pengecekan
+        $fileContent = file_get_contents($avatarPath);
+
+        return response($fileContent)->header('Content-Type', 'image/png');
+    }
+
     /**
      * Delete the user's account.
      */

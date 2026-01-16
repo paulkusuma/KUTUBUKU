@@ -185,12 +185,25 @@ A08:2025 - Software or Data Integrity Failures
     Di halaman tersebut, Anda akan melihat kode JavaScript berbahaya Anda yang sekarang tersimpan dan di-hosting oleh server KUTUBUKU.
     Ini membuktikan bahwa server KUTUBUKU telah berhasil dieksploitasi untuk menyimpan file berbahaya. Penyerang sekarang bisa menggunakan file ini untuk melancarkan serangan lebih lanjut.
 
-Cara Menggunakan Lab Ini
+A10:2025 - Mishandling of Exceptional Conditions
 
-    Pastikan Anda berada di branch staging (git checkout staging).
-    Ikuti langkah-langkah eksploitasi yang dijelaskan di dokumentasi setiap kerentanan.
-    Untuk melihat versi kode yang aman, bandingkan dengan branch main (git diff main staging).
-    Jangan lupa untuk kembali ke branch dev (git checkout dev) jika ingin menambah fitur atau kerentanan baru dengan aman.
+1.  Path Disclosure through Improper Error Handling
+
+        Lokasi: app/Http/Controllers/ProfileController.php (metode showAvatar).
+        Deskripsi: Aplikasi tidak menangani kondisi error dengan baik. Saat mencoba mengakses file yang tidak ada (dalam hal ini, avatar pengguna), aplikasi menampilkan pesan error yang mencakup path lengkap dari sistem file di server. Ini membocorkan informasi internal yang penting kepada penyerang.
+        PoC / Eksploitasi:
+            Login sebagai user mana pun.
+            Akses halaman profil dan klik link "Lihat Avatar Saya" yang mengarah ke /profile/{id}/avatar.
+            Karena file avatar tidak ada, aplikasi akan menampilkan error ErrorException.
+            Pesan error tersebut akan menampilkan path lengkap server, seperti C:\laragon\www\KUTUBUKU\public\avatars\2.png.
+        Remediasi: Lihat branch main. Selalu gunakan blok try...catch untuk menangani operasi yang mungkin gagal (seperti akses file). Jangan pernah menampilkan detail error sistem ke pengguna. Alih-alih, tampilkan pesan error yang generik dan log error detailnya ke file log untuk dianalisis oleh developer.
+
+    Cara Menggunakan Lab Ini
+
+        Pastikan Anda berada di branch staging (git checkout staging).
+        Ikuti langkah-langkah eksploitasi yang dijelaskan di dokumentasi setiap kerentanan.
+        Untuk melihat versi kode yang aman, bandingkan dengan branch main (git diff main staging).
+        Jangan lupa untuk kembali ke branch dev (git checkout dev) jika ingin menambah fitur atau kerentanan baru dengan aman.
 
 Lisensi
 
