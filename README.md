@@ -55,6 +55,25 @@ A01:2021 - Broken Access Control
     User biasa dapat melihat dashboard admin yang berisi data sensitif.
     Remediasi: Lihat branch main. Tambahkan middleware khusus untuk memeriksa role, misalnya ->middleware('auth', 'role:admin').
 
+A04:2021 - Cryptographic Failures
+
+1. Penyimpanan Data Kartu Kredit dalam Plaintext
+
+    Lokasi:
+    database/migrations/YYYY_MM_DD_HHMMSS_add_card_fields_to_users_table.php
+    app/Http/Controllers/ProfileController.php (metode updatePayment)
+    resources/views/profile/edit.blade.php
+
+    Deskripsi: Aplikasi menyimpan informasi kartu kredit (nomor kartu, CVV, masa berlaku, dan nama pemegang kartu) dalam database sebagai plaintext tanpa enkripsi atau hash. Ini adalah pelanggaran serius terhadap standar keamanan data kartu pembayaran (PCI DSS) dan sangat berbahaya jika database mengalami kebocoran data.
+    PoC / Eksploitasi:
+    Login sebagai user mana pun.
+    Navigasi ke halaman profil (/profile/{id}).
+    Isi formulir "Informasi Pembayaran" dengan data kartu kredit palsu (misalnya: 4111 1111 1111 1111).
+    Klik tombol "Simpan Pembayaran".
+    Akses database langsung (melalui php artisan tinker, phpMyAdmin, atau alat lainnya).
+    Periksa tabel users pada baris user tersebut. Data kartu kredit akan terlihat jelas dalam format plaintext.
+    Remediasi: Lihat branch main. Jangan pernah menyimpan data kartu kredit lengkap. Jika memang harus menyimpan referensi, simpan hanya informasi non-sensitif seperti 4 digit terakhir. Untuk data yang perlu dienkripsi, gunakan enkripsi yang kuat yang disediakan oleh Laravel seperti Crypt::encrypt().
+
 A05:2021 - Injection
 
 1. SQL Injection (SQLi)

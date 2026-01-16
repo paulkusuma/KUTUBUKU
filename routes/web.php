@@ -38,6 +38,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // Route baru khusus untuk pembayaran
+    Route::patch('/profile/payment', [ProfileController::class, 'updatePayment'])->name('profile.payment.update');
+
     // Route untuk buku (aman)
     Route::get('/books', [BookController::class, 'index'])->name('books.index');
     Route::get('/books/{book}', [BookController::class, 'show'])->name('books.show');

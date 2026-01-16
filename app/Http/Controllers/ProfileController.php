@@ -39,11 +39,37 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        // Tambahkan baris ini untuk debugging
+        // dd($request->all(), $request->method());
         $user = $request->user();
 
         // Validasi data umum (nama, email)
         $validated = $request->validated();
         $user->fill($validated);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
+
+        return Redirect::route('profile.edit', $user->id)->with('status', 'profile-updated');
+    }
+
+    /**
+     * Update the user's payment information.
+     */
+    public function updatePayment(Request $request): RedirectResponse
+    {
+        // Validasi khusus untuk data pembayaran
+        $request->validate([
+            'card_holder_name' => 'required|string|max:255',
+            'card_number' => 'required|string|max:19',
+            'card_expiry' => 'required|string|max:5',
+            'card_cvv' => 'required|string|max:4',
+        ]);
+
+        $user = $request->user();
 
         // !!! VULNERABILITY: CRYPTOGRAPHIC FAILURE !!!
         // Menyimpan data kartu kredit dari input user tanpa enkripsi.
@@ -52,15 +78,10 @@ class ProfileController extends Controller
         $user->card_cvv = $request->input('card_cvv');
         $user->card_holder_name = $request->input('card_holder_name');
 
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
         $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit', $user->id)->with('status', 'payment-updated');
     }
-
     /**
      * Delete the user's account.
      */

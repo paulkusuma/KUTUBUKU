@@ -7,59 +7,88 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include 'profile.partials.update-profile-information-form'
-                </div>
+            
+            <!-- FORM INFORMASI PROFIL -->
+            <div class="p-4 sm:p-8 bg-white shadow-sm rounded-lg">
+                <header>
+                    <h2 class="text-lg font-medium text-gray-900">Informasi Profil</h2>
+                    <p class="mt-1 text-sm text-gray-600">
+                        Perbarui informasi akun dan alamat email Anda.
+                    </p>
+                </header>
+
+                <form method="POST" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+                    @csrf
+                    @method('PATCH')
+                    
+                    <!-- Nama -->
+                    <div>
+                        <x-input-label for="name" :value="__('Name')" />
+                        <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
+                        <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <x-input-label for="email" :value="__('Email')" />
+                        <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
+                        <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <x-primary-button>{{ __('Save') }}</x-primary-button>
+                        @if (session('status'))
+                            <div class="text-sm text-gray-600">{{ session('status') }}</div>
+                        @endif
+                    </div>
+                </form>
             </div>
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include 'profile.partials.update-password-form'
-                </div>
-            </div>
+            <!-- FORM KARTU KREDIT (KERENTANAN) -->
+            <div class="p-4 sm:p-8 bg-white shadow-sm rounded-lg">
+                <header>
+                    <h2 class="text-lg font-medium text-gray-900">Informasi Pembayaran</h2>
+                    <p class="mt-1 text-sm text-red-600">
+                        <strong>PERINGATAN:</strong> Data yang Anda masukkan akan disimpan secara tidak aman.
+                    </p>
+                </header>
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include 'profile.partials.delete-user-form'
-                </div>
-            </div>
+                <!-- PERUBAHAN: KEMBALI KE CARA STANDAR LARAVEL -->
+                <form method="POST" action="{{ route('profile.payment.update') }}" class="mt-6 space-y-6">
+                    @csrf
+                    @method('PATCH')
+                    
+                    <div class="mt-4">
+                        <x-input-label for="card_holder_name" :value="__('Nama Pemegang Kartu')" />
+                        <x-text-input id="card_holder_name" name="card_holder_name" type="text" class="mt-1 block w-full" :value="old('card_holder_name', $user->card_holder_name)" autocomplete="cc-name" />
+                        <x-input-error :messages="$errors->get('card_holder_name')" class="mt-2" />
+                    </div>
 
-            <!-- TAMBAHKAN FORM SIMPAN KARTU KREDIT -->
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    <h3 class="text-base font-semibold leading-6 text-gray-900 mb-4">Informasi Kartu Kredit</h3>
-                    <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="space-y-6">
-                        @csrf
-                        <!-- FORM UNTUK DATA PROFILUM (Nama, Email) -->
-                        <x-profile-update-form-form :user="$user"></x-profile-update-form>
+                    <div class="mt-4">
+                        <x-input-label for="card_number" :value="__('Nomor Kartu')" />
+                        <x-text-input id="card_number" name="card_number" type="text" class="mt-1 block w-full" :value="old('card_number', $user->card_number)" autocomplete="cc-number" />
+                        <x-input-error :messages="$errors->get('card_number')" class="mt-2" />
+                    </div>
 
-                        <!-- FORM UNTUK DATA KARTU KREDIT -->
-                        <h4 class="text-base font-semibold leading-6 text-gray-900 mt-6">Detail Kartu Kredit</h4>
-                        <div class="grid grid grid-cols-1 gap-y-6">
-                            <div>
-                                <x-label for="card_number" class="block text-sm font-medium text-gray-700">Nomor Kartu</x-label>
-                                <x-text-input type="text" id="card_number" name="card_number" wire:model="card_number" :value="$user->card_number" autocomplete="cc-number" required />
-                            </div>
-                            <div>
-                                <x-label for="card_expiry" class="block text-sm font-medium text-gray-700">Tanggal Kadaluarsa (MM/YY)</x-label>
-                                <x-text-input type="text" id="card_expiry" name="card_expiry" wire:model="card_expiry" placeholder="MM/YY" required />
-                            </div>
-                            <div>
-                                <x-label for="card_cvv" class="block text-sm font-medium text-gray-700">CVV</x-label>
-                                <x-text-input type="text" id="card_cvv" name="card_cvv" maxlength="4" required />
-                            </div>
-                            <div>
-                                <x-label for="card_holder_name" class="block text-sm font-medium text-gray-700">Nama Pemegang Kartu</x-label>
-                                <x-text-input type="text" id="card_holder_name" name="card_holder_name" wire:model="card_holder_name" required />
-                            </div>
+                    <div class="mt-4 grid grid-cols-2 gap-4">
+                        <div>
+                            <x-input-label for="card_expiry" :value="__('Masa Berlaku (MM/YY)')" />
+                            <x-text-input id="card_expiry" name="card_expiry" type="text" class="mt-1 block w-full" :value="old('card_expiry', $user->card_expiry)" placeholder="MM/YY" autocomplete="cc-exp" />
+                            <x-input-error :messages="$errors->get('card_expiry')" class="mt-2" />
                         </div>
-
-                        <div class="flex items-center justify-end mt-4">
-                            <x-primary-button>Simpan</x-primary-button>
+                        
+                        <div>
+                            <x-input-label for="card_cvv" :value="__('CVV')" />
+                            <x-text-input id="card_cvv" name="card_cvv" type="text" class="mt-1 block w-full" :value="old('card_cvv', $user->card_cvv)" autocomplete="cc-csc" />
+                            <x-input-error :messages="$errors->get('card_cvv')" class="mt-2" />
                         </div>
-                    </form>
-                </div>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <x-primary-button>{{ __('Simpan Pembayaran') }}</x-primary-button>
+                    </div>
+                </form>
             </div>
         </div>
-    </x-app-layout>
+    </div>
+</x-app-layout>
