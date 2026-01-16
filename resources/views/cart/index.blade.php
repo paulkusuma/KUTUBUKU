@@ -44,5 +44,6 @@
                 </div>
             </div>
         </div>
+        <a href="{{ route('cart.invoice') }}" class="btn btn-info">Cetak Invoice</a>
     </div>
 </x-app-layout>

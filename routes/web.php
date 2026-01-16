@@ -56,6 +56,9 @@ Route::middleware('auth')->group(function () {
 
     // Route untuk melihat avatar user (rentan)
     Route::get('/profile/{id}/avatar', [ProfileController::class, 'showAvatar'])->name('profile.avatar');
+
+    // Route untuk cetak invoice (rentan)
+    Route::get('/cart/invoice', [CartController::class, 'generateInvoice'])->name('cart.invoice');
 });
 
 // Route ini rentan karena hanya butuh login, tidak butuh role 'admin'

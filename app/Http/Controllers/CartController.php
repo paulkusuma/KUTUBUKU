@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Book;
 
 use Illuminate\Support\Facades\Session;
+
+use App\Services\VulnerableImageFetcher;
 class CartController extends Controller
 {
     // Menambahkan buku ke keranjang
@@ -63,5 +65,26 @@ class CartController extends Controller
         // Session::forget('cart');
 
         // return view('cart.success', ['totalPrice' => $totalPrice]);
+    }
+
+    /**
+     * Cetak invoice dengan gambar logo (KERENTANAN ADA DI SINI).
+     */
+    public function generateInvoice(Request $request)
+    {
+        //Gunakan URL dinamis yang sesuai dengan aplikasi
+        $defaultLogoUrl = url('/images/default-logo.png');
+        $imageUrl = $request->input('logo_url', $defaultLogoUrl);
+
+        // Gunakan "package" palsu yang rentan
+        $fetcher = new VulnerableImageFetcher();
+        $logoData = $fetcher->fetchImage($imageUrl);
+
+        // Di sini seharusnya ada logika untuk membuat PDF dengan logo
+        // Untuk demonstrasi, kita hanya akan menampilkan bahwa logo berhasil diambil
+        return view('cart.invoice', [
+            'logoData' => base64_encode($logoData),
+            'imageUrl' => $imageUrl
+        ]);
     }
 }

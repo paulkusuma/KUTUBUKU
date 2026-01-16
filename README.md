@@ -68,6 +68,72 @@ A02:2025 - Security Misconfiguration
     Di bagian "Environment" atau "Context", penyerang dapat melihat semua kredensial sensitif yang disimpan dalam variabel lingkungan .env, seperti DB_PASSWORD, APP_KEY, dll.
     Remediasi: Lihat branch main. Pastikan APP_DEBUG diset ke false di lingkungan produksi. Selain itu, buat halaman error kustom (resources/views/errors/500.blade.php) yang ramah pengguna dan tidak membocorkan informasi apa pun.
 
+A03:2025 - Software Supply Chain Failures
+
+1. Use of Outdated Vulnerable Dependencies (Simulated SSRF)
+
+    Lokasi: app/Services/VulnerableImageFetcher.php, app/Http/Controllers/CartController.php.
+    Deskripsi: Aplikasi menggunakan library pihak ketiga (VulnerableImageFetcher) yang memiliki kerentanan Server-Side Request Forgery (SSRF). Kerentanan ini mensimulasikan penggunaan dependency yang usang dan tidak aman. Fitur "Cetak Invoice" memungkinkan user untuk memasukkan URL yang akan di-fetch oleh server. Kerentanan di library tersebut memungkinkan penyerang untuk memaksa server mengakses URL internal atau jaringan internal atas nama server tersebut.
+    PoC / Eksploitasi:
+    Hidupkan server "penyerang" di localhost:8001 yang berisi gambar evil-logo.png.
+    Buka fitur "Cetak Invoice" dari halaman keranjang.
+    Di form "URL Logo", masukkan URL dari server penyerang: http://localhost:8001/evil-logo.png.
+    Server KUTUBUKU akan mengakses URL tersebut dan menampilkan gambar dari server penyerang di halaman preview invoice. Ini membuktikan bahwa server KUTUBUKU bisa dipaksa untuk mengakses layanan lain di jaringan.
+    Remediasi: Lihat branch main. Selalu perbarui dependency ke versi terbaru yang aman. Gunakan alat seperti composer audit untuk mendeteksi dependency yang rentan. Selain itu, validasi dan whitelist URL yang boleh diakses oleh aplikasi, dan jangan pernah menggunakan fungsi seperti file_get_contents() untuk URL dari input user tanpa validasi ketat.
+
+2. Penjelasan Hubungan dengan Dependency
+
+Pertanyaan Anda sangat tepat. Hubungannya sangat langsung: Dependency-nya adalah sumber kerentanannya.
+
+Mari kita gunakan analogi yang sederhana:
+
+     A03 (Software Supply Chain Failure): Ini adalah penyakitnya. Aplikasi KUTUBUKU "sakit" karena menggunakan "obat" (dependency) yang salah.
+     SSRF (Server-Side Request Forgery): Ini adalah gejalanya. Karena minum obat yang salah, aplikasi menjadi "linglung" dan melakukan hal-hal di luar kendali (mengunjungi URL sembarangan).
+
+
+Dalam Kode KUTUBUKU:
+
+    Dependency-nya adalah file app/Services/VulnerableImageFetcher.php.
+         Kita berpura-pura ini adalah library yang kita unduh dari internet (misalnya composer require bad-guy/image-fetcher).
+         Tugasnya sederhana: mengambil gambar dari URL.
+
+
+    Sumber Racunnya ada di dalam dependency itu.
+         Lihat lagi kodenya: return file_get_contents($url);
+         Fungsi file_get_contents() ini sangat berbahaya jika URL-nya berasal dari user. Ini adalah "racun" di dalam "obat" tersebut.
+
+
+    Aplikasi KUTUBUKU (CartController.php) adalah "korban".
+         Controller ini tidak tahu bahwa library yang ia gunakan berbahaya.
+         Ia mempercayai library tersebut dan memberinya input dari user ($imageUrl).
+         Akibatnya, server KUTUBUKU menjadi korban serangan SSRF.
+
+
+Kesimpulan: A03 adalah penyebab utamanya (menggunakan dependency yang cacat), dan SSRF adalah dampak atau serangan yang terjadi karena penyebab utama tersebut. Tanpa dependency yang rentan, serangan SSRF melalui fitur ini tidak akan mungkin terjadi. 3. Tujuan Dependency dalam Aplikasi
+
+Pertanyaan "dependencynya untuk apa?" adalah kunci untuk memahami konteksnya.
+
+Tujuannya adalah untuk memenuhi kebutuhan bisnis: Mencetak invoice yang terlihat profesional.
+
+    Kebutuhan: Tim marketing ingin setiap invoice yang dikirim ke pelanggan mencantumkan logo perusahaan.
+    Masalah Teknis: Logo tidak selalu disimpan di server yang sama dengan aplikasi. Bisa jadi:
+         Disimpan di CDN (Content Delivery Network) agar cepat diakses dari seluruh dunia.
+         Disimpan di server terpisah yang digunakan tim marketing untuk mengupload aset.
+         URL-nya bisa berubah sewaktu-waktu (misalnya logo-2023.png, logo-2024.png).
+
+    Solusi (Dependency): Karena butuh cara untuk mengambil gambar dari URL eksternal, developer memutuskan untuk menggunakan library/image fetcher.
+         Tugas library ini: "Diberikan URL, tolong ambilkan filenya dan kembalikan isinya."
+         Ini adalah tugas yang umum, jadi wajar developer menggunakan library yang sudah ada daripada membuat dari nol.
+
+
+Di sinilah letak kesalahannya:
+
+     Pilihan yang Salah: Developer memilih library VulnerableImageFetcher (yang kita pura-pura ada) tanpa mengecek reputasinya atau mengetahui bahwa ia memiliki celah SSRF.
+     Pilihan yang Benar: Seharusnya developer menggunakan library yang aman, atau membuat fungsi sendiri dengan validasi yang ketat (misalnya, hanya boleh mengambil URL dari domain cdn.kutubuku.test).
+
+
+Jadi, dependency-nya punya tujuan yang sah dan penting bagi bisnis, tetapi karena Software Supply Chain Failure (memilih dependency yang salah), tujuan tersebut disalahgunakan oleh penyerang.
+
 A04:2021 - Cryptographic Failures
 
 1. Penyimpanan Data Kartu Kredit dalam Plaintext
