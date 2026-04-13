@@ -10,9 +10,9 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     
-                    {{-- LOGIKA UNTUK MENGECEK ROLE --}}
+                    {{-- INI ADALAH BARIS YANG HILANG --}}
                     @if(Auth::user()->role === 'admin')
-                        {{-- INI KONTEN YANG HANYA ADMIN LIHAT --}}
+                        {{-- KONTEN UNTUK ADMIN --}}
                         <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                             <h3 class="text-lg font-bold text-red-800">Selamat datang, Admin!</h3>
                             <p class="text-red-600">Anda memiliki akses penuh ke sistem.</p>
@@ -29,7 +29,7 @@
                         </div>
 
                     @else
-                        {{-- INI KONTEN YANG HANYA USER BIASA LIHAT --}}
+                        {{-- KONTEN UNTUK USER BIASA --}}
                         <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                             <h3 class="text-lg font-bold text-green-800">Selamat datang di KUTUBUKU!</h3>
                             <p class="text-green-600">Temukan buku favorit Anda.</p>

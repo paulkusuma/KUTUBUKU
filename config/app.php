@@ -72,6 +72,18 @@ return [
 
     'timezone' => 'UTC',
 
+
+    /*
+   |--------------------------------------------------------------------------
+   | Konfigurasi Invoice
+   |--------------------------------------------------------------------------
+   |
+   | Di sini kita menyimpan konfigurasi yang terkait dengan invoice.
+   */
+    'invoice' => [
+        'logo_url' => env('INVOICE_LOGO_URL', 'http://localhost:8001/pngegg.png'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

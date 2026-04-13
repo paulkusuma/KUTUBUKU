@@ -8,16 +8,30 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
 {
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+    // public function edit(Request $request): View
+    // {
+    //     return view('profile.edit', [
+    //         'user' => $request->user(),
+    //     ]);
+    // }
+
+    public function edit(Request $request, $id): View
     {
+        // !!! VULNERABILITY: IDOR !!!
+        // Kode ini RENTAN karena langsung mempercayai ID dari URL
+        // tanpa memeriksa apakah user yang login boleh mengakses data ini.
+        $user = User::findOrFail($id);
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
         ]);
     }
 
@@ -26,11 +40,58 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        // Tambahkan baris ini untuk debugging
+        // dd($request->all(), $request->method());
         $user = $request->user();
 
         // Validasi data umum (nama, email)
         $validated = $request->validated();
         $user->fill($validated);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        // !!! LOGGING YANG BAIK !!!
+        Log::info('User Profile Updated', [
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'ip_address' => $request->ip(),
+            'changes' => $user->getDirty(), // Opsional: mencatat apa yang berubah
+        ]);
+
+        $user->save();
+
+        return Redirect::route('profile.edit', $user->id)->with('status', 'profile-updated');
+    }
+
+    /**
+     * Update the user's payment information.
+     */
+    public function updatePayment(Request $request): RedirectResponse
+    {
+        // dd($request->all(), 'Jika Anda melihat ini, berarti metode updatePayment dipanggil!');
+        // Validasi khusus untuk data pembayaran
+        $request->validate([
+            'card_holder_name' => 'required|string|max:255',
+            'card_number' => 'required|string|max:19',
+            'card_expiry' => 'required|string|max:5',
+            'card_cvv' => 'required|string|max:4',
+        ]);
+
+        $user = $request->user();
+
+        // !!! LOGGING YANG BAIK !!!
+        // Catat AKTIVITAS, bukan data sensitif.
+        Log::info('Payment Information Updated', [
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'ip_address' => $request->ip(), // Penting untuk tracing
+        ]);
+        // !!! VULNERABILITY: CWE-532 - INSERTION OF SENSITIVE INFO INTO LOG FILE !!!
+        // Untuk tujuan debugging, developer mencatat SEMUA data request, termasuk informasi kartu kredit.
+        // Log::info('Payment data received:', $request->all());
+
 
         // !!! VULNERABILITY: CRYPTOGRAPHIC FAILURE !!!
         // Menyimpan data kartu kredit dari input user tanpa enkripsi.
@@ -39,13 +100,26 @@ class ProfileController extends Controller
         $user->card_cvv = $request->input('card_cvv');
         $user->card_holder_name = $request->input('card_holder_name');
 
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
         $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit', $user->id)->with('status', 'payment-updated');
+    }
+
+
+    /**
+     * Tampilkan avatar user (KERENTANAN ADA DI SINI).
+     */
+    public function showAvatar($id)
+    {
+        // !!! VULNERABILITY: A10 - MISHANDLING EXCEPTIONS !!!
+        // Kita mencoba mengakses file secara langsung tanpa memeriksa apakah file itu ada.
+        // Jika file tidak ada, Laravel akan memunculkan error yang menampilkan path lengkap server.
+        $avatarPath = public_path('avatars/' . $id . '.png');
+
+        // Cara yang salah: langsung membuka file tanpa pengecekan
+        $fileContent = file_get_contents($avatarPath);
+
+        return response($fileContent)->header('Content-Type', 'image/png');
     }
 
     /**
