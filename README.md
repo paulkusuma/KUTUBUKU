@@ -139,15 +139,31 @@ A04:2021 - Cryptographic Failures
     app/Http/Controllers/ProfileController.php (metode updatePayment)
     resources/views/profile/edit.blade.php
 
-    Deskripsi: Aplikasi menyimpan informasi kartu kredit (nomor kartu, CVV, masa berlaku, dan nama pemegang kartu) dalam database sebagai plaintext tanpa enkripsi atau hash. Ini adalah pelanggaran serius terhadap standar keamanan data kartu pembayaran (PCI DSS) dan sangat berbahaya jika database mengalami kebocoran data.
+    Deskripsi: Aplikasi menyimpan informasi kartu kredit (nomor kartu, CVV, masa berlaku, dan nama pemegang kartu) dalam database sebagai plaintext (teks biasa) tanpa enkripsi atau hash. Ini adalah pelanggaran serius terhadap standar keamanan data kartu pembayaran (PCI DSS) dan sangat berbahaya jika database mengalami kebocoran data. Menyimpan data dalam plaintext berarti siapa pun yang memiliki akses ke database dapat langsung membaca dan menyalin informasi kartu kredit pelanggan.
+
+    Mengapa Ini Masalah?Jika seorang penyerang berhasil membobol database (misalnya melalui SQLi, akses tidak sah, atau pencurian backup), mereka akan langsung mendapatkan data lengkap kartu kredit pelanggan. Ini dapat menyebabkan kerugian finansial yang besar bagi pelanggan, kehancuran reputasi bisnis, dan sanksi hukum karena tidak mematuhi regulasi seperti PCI DSS.
+
     PoC / Eksploitasi:
-    Login sebagai user mana pun.
+    Login sebagai user mana pun ke aplikasi.
     Navigasi ke halaman profil (/profile/{id}).
     Isi formulir "Informasi Pembayaran" dengan data kartu kredit palsu (misalnya: 4111 1111 1111 1111).
     Klik tombol "Simpan Pembayaran".
     Akses database langsung (melalui php artisan tinker, phpMyAdmin, atau alat lainnya).
     Periksa tabel users pada baris user tersebut. Data kartu kredit akan terlihat jelas dalam format plaintext.
-    Remediasi: Lihat branch main. Jangan pernah menyimpan data kartu kredit lengkap. Jika memang harus menyimpan referensi, simpan hanya informasi non-sensitif seperti 4 digit terakhir. Untuk data yang perlu dienkripsi, gunakan enkripsi yang kuat yang disediakan oleh Laravel seperti Crypt::encrypt().
+
+    Remediasi:Lihat implementasi di branch main. Ada dua pendekatan utama untuk mengatasi ini:
+    Jangan Menyimpan Data Sama Sekali (Paling Aman): Ini adalah praktik terbaik. Gunakan tokenisasi dari payment gateway (seperti Stripe, Midtrans). Aplikasi hanya menyimpan token yang tidak berguna jika dicuri, bukan data kartu asli.
+    Enkripsi Data Sensitif (Jika Terpaksa Harus Menyimpan): Jika karena alasan bisnis harus menyimpan data, enkripsi data tersebut sebelum disimpan ke database. Laravel menyediakan fasilitas enkripsi yang kuat dan mudah digunakan.
+
+    Analisis Kode di main (Implementasi Enkripsi):Di branch main, kerentanan ini diperbaiki dengan mengenkripsi data sebelum disimpan.Di ProfileController.php:
+
+    // !!! REMEDIASI: CRYPTOGRAPHIC FAILURE !!!// Enkripsi data sensitif SEBELUM menyimpan ke database.$encryptedCardNumber = Crypt::encrypt($request->input('card_number'));$encryptedCardCvv = Crypt::encrypt($request->input('card_cvv'));// ... simpan $encryptedCardNumber ke database, bukan data asli
+
+    Di User.php Model:Untuk memudahkan penggunaan, Eloquent Accessor digunakan untuk mendekripsi data secara otomatis saat dipanggil.
+
+    public function getCardNumberAttribute($value){    try {        return Crypt::decrypt($value); } catch (\Illuminate\Contracts\Encryption\DecryptException $e) { return null; }}
+
+    Dengan cara ini, data di database terenkripsi, tetapi di dalam aplikasi, data tetap bisa diakses dengan mudah dan aman.
 
 A05:2021 - Injection
 
@@ -249,17 +265,29 @@ A08:2025 - Software or Data Integrity Failures
 
 A09:2025 - Security Logging and Alerting Failures
 
-1. Tidak Adanya Log untuk Kejadian Keamanan
-   Pencatatan Informasi Sensitif ke Log File (CWE-532)
-   Lokasi: app/Http/Controllers/ProfileController.php (metode updatePayment).
-   Deskripsi: Aplikasi tidak hanya gagal mencatat kejadian keamanan, tetapi juga melakukan kesalahan sebaliknya: mencatat informasi yang terlalu sensitif. Saat user memperbarui informasi pembayaran, aplikasi mencatat SEMUA data request, termasuk nomor kartu kredit dan CVV, ke dalam file log teks biasa.
-   PoC / Eksploitasi:
-   Login dan buka halaman profil.
-   Isi form "Informasi Pembayaran" dengan data kartu kredit.
-   Klik "Simpan Pembayaran".
-   Buka file log di storage/logs/laravel.log.
-   Hasil: Nomor kartu kredit, CVV, dan data sensitif lainnya akan terlihat jelas dalam format teks biasa di file log.
-   Remediasi: Lihat branch main. Jangan pernah mencatat informasi sensitif seperti password, nomor kartu kredit, atau CVV ke dalam log. Jika perlu mencatat request untuk debugging, pastikan untuk menyaring (filter) atau menghapus data sensitif sebelum dicatat.
+Tidak Adanya Log untuk Kejadian Keamanan dan Pencatatan Informasi Sensitif ke Log File (CWE-532)
+
+Lokasi: app/Http/Controllers/ProfileController.php (metode updatePayment) dan app/Http/Controllers/Auth/AuthenticatedSessionController.php (metode store dan destroy).
+
+Deskripsi: Aplikasi memiliki kegagalan ganda dalam sistem pencatatan log keamanan. Pertama, aplikasi mencatat informasi yang terlalu sensitif ke dalam file log. Saat user memperbarui informasi pembayaran, aplikasi mencatat SEMUA data request, termasung nomor kartu kredit dan CVV, ke dalam file log teks biasa. Kedua, aplikasi sama sekali tidak memiliki log untuk kejadian keamanan kritis seperti percobaan login (baik berhasil maupun gagal) dan logout. Kombinasi ini menciptakan sistem yang tidak hanya membocorkan data sensitif tetapi juga "buta" terhadap aktivitas mencurigakan dan serangan.
+
+PoC / Eksploitasi:
+
+    Kebocoran Data: Login dan buka halaman profil. Isi form "Informasi Pembayaran" dengan data kartu kredit. Klik "Simpan Pembayaran". Buka file log di storage/logs/laravel.log. Hasil: Nomor kartu kredit, CVV, dan data sensitif lainnya akan terlihat jelas dalam format teks biasa.
+    Serangan Tidak Terdeteksi: Dari alamat IP yang sama, coba lakukan login dengan password yang salah beberapa kali. Periksa file log. Tidak akan ada catatan percobaan login gagal, membuat serangan brute-force tidak dapat dideteksi oleh sistem.
+
+Remediasi: Masalah ini telah diperbaiki dengan implementasi sistem logging yang aman dan komprehensif.
+
+    Hapus Pencatatan Data Sensitif: Baris kode yang mencatat seluruh request (Log::info($request->all())) telah dihapus. Jangan pernah mencatat informasi sensitif seperti password, nomor kartu kredit, atau CVV ke dalam log.
+    Implementasi Logging Aktivitas Kritis: Tambahkan log untuk semua kejadian keamanan penting:
+         Login Gagal: Mencatat email dan IP sumber untuk mendeteksi serangan brute-force.
+         Login Berhasil: Mencatat user yang berhasil masuk untuk audit trail.
+         Logout: Mencatat akhir sesi pengguna.
+         Pembaruan Data: Mencatat aktivitas penting seperti perubahan data pembayaran tanpa menyimpan detailnya.
+
+    Gunakan Log Berbasis Konteks: Alih-alih mencatat data mentah, catatlah konteks kejadian (siapa, apa, kapan, dari mana) untuk keperluan audit dan analisis keamanan.
+
+Dengan demikian, aplikasi tidak lagi membocorkan data sensitif dan kini memiliki audit trail yang kuat untuk mendeteksi, menganalisis, dan merespons ancaman keamanan secara efektif.
 
 A10:2025 - Mishandling of Exceptional Conditions
 

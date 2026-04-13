@@ -1,6 +1,51 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Invoice Anda') }}
+        </h2>
+    </x-slot>
+
+    {{-- Kita cek apakah logo berhasil diambil untuk mencegah error --}}
+    @if(isset($logoData))
+        <div class="container mt-4">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card">
+                        {{-- <div class="card-header bg-success text-white">
+                            <h3 class="mb-0">Detail Invoice</h3>
+                        </div> --}}
+                        <div class="card-body text-center">
+                            {{-- Tampilkan logo --}}
+                            <img src="data:image/png;base64,{{ $logoData }}" alt="Invoice Logo" class="mb-3" style="max-width: 150px;">
+
+                            {{-- Di sini nanti kamu bisa tambahkan detail invoice lainnya --}}
+                            <p><strong>Nama Pelanggan:</strong> John Doe</p>
+                            <p><strong>Tanggal:</strong> {{ now()->format('d M Y') }}</p>
+                            <p><strong>No. Invoice:</strong> INV/2023/10/001</p>
+                            <hr>
+                            <p>... (Detail barang, harga, total, dll.) ...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @else
+        {{-- Tampilkan pesan error jika gagal mengambil logo --}}
+        <div class="container mt-4">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Maaf, terjadi kesalahan.</strong> Tidak dapat memuat gambar invoice. Silakan hubungi administrator.
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+</x-app-layout>
+
+{{-- <x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Cetak Invoice') }}
         </h2>
     </x-slot>
@@ -43,4 +88,4 @@
     </div>
 </div>
 @endif
-</x-app-layout>
+</x-app-layout> --}}

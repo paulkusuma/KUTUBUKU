@@ -14,6 +14,10 @@
                     <a href="{{ route('books.index') }}" class="mt-4 inline-block bg-blue-500 text-white font-bold py-2 px-4 rounded">
                         Kembali ke Belanja
                     </a>
+                    <!-- TOMBOL UNTUK MENJALANKAN RENTANAN A03 -->
+                    <a href="{{ route('cart.invoice') }}" class="inline-block bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700">
+                        Cetak Invoice
+                    </a>
                 </div>
             </div>
         </div>

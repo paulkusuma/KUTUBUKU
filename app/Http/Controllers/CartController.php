@@ -72,16 +72,43 @@ class CartController extends Controller
      */
     public function generateInvoice(Request $request)
     {
-        //Gunakan URL dinamis yang sesuai dengan aplikasi
-        $defaultLogoUrl = url('/images/default-logo.png');
-        $imageUrl = $request->input('logo_url', $defaultLogoUrl);
+        // // !!! SIMULASI KEPERCAYAAN DEVELOPER !!!
+        // // Developer mempercayai dependency dan konfigurasi yang telah dibuat.
+        // $logoUrl = config('app.invoice_logo_url'); // Ambil dari config/app.php
 
-        // Gunakan "package" palsu yang rentan
+        // // Gunakan dependency yang rentan untuk mendemonstrasikan bahaya dari kepercayaan ini.
+        // $fetcher = new VulnerableImageFetcher();
+        // $logoData = $fetcher->fetchImage($logoUrl);
+
+        // return view('cart.invoice', [
+        //     'logoData' => base64_encode($logoData),
+        //     'logoUrl' => $logoUrl,
+        //     'cartItems' => Session::get('cart', []) // Ambil data keranjang untuk ditampilkan
+        // ]);
+
+        // //Gunakan URL dinamis yang sesuai dengan aplikasi
+        // $defaultLogoUrl = url('/images/default-logo.png');
+        // $imageUrl = $request->input('logo_url', $defaultLogoUrl);
+
+        // // Gunakan "package" palsu yang rentan
+        // $fetcher = new VulnerableImageFetcher();
+        // $logoData = $fetcher->fetchImage($imageUrl);
+
+        // // Di sini seharusnya ada logika untuk membuat PDF dengan logo
+        // // Untuk demonstrasi, kita hanya akan menampilkan bahwa logo berhasil diambil
+        // return view('cart.invoice', [
+        //     'logoData' => base64_encode($logoData),
+        //     'imageUrl' => $imageUrl
+        // ]);
+
+        // 1. URL logo sekarang sudah TETAP, tidak perlu input dari user.
+        $imageUrl = 'http://localhost:8001/pngegg.png';
+
+        // 2. Langsung ambil gambar dari URL yang sudah ditentukan.
         $fetcher = new VulnerableImageFetcher();
         $logoData = $fetcher->fetchImage($imageUrl);
 
-        // Di sini seharusnya ada logika untuk membuat PDF dengan logo
-        // Untuk demonstrasi, kita hanya akan menampilkan bahwa logo berhasil diambil
+        // 3. Kirim data ke view. View akan menampilkan hasilnya.
         return view('cart.invoice', [
             'logoData' => base64_encode($logoData),
             'imageUrl' => $imageUrl

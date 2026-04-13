@@ -43,6 +43,11 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            // Tambahkan baris-baris ini sebagai nilai default
+            'card_number' => '0',
+            'card_expiry' => '0',
+            'card_cvv' => '0',
+            'card_holder_name' => '0',
         ]);
 
         event(new Registered($user));

@@ -52,6 +52,14 @@ class ProfileController extends Controller
             $user->email_verified_at = null;
         }
 
+        // !!! LOGGING YANG BAIK !!!
+        Log::info('User Profile Updated', [
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'ip_address' => $request->ip(),
+            'changes' => $user->getDirty(), // Opsional: mencatat apa yang berubah
+        ]);
+
         $user->save();
 
         return Redirect::route('profile.edit', $user->id)->with('status', 'profile-updated');
@@ -73,9 +81,16 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        // !!! LOGGING YANG BAIK !!!
+        // Catat AKTIVITAS, bukan data sensitif.
+        Log::info('Payment Information Updated', [
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'ip_address' => $request->ip(), // Penting untuk tracing
+        ]);
         // !!! VULNERABILITY: CWE-532 - INSERTION OF SENSITIVE INFO INTO LOG FILE !!!
         // Untuk tujuan debugging, developer mencatat SEMUA data request, termasuk informasi kartu kredit.
-        Log::info('Payment data received:', $request->all());
+        // Log::info('Payment data received:', $request->all());
 
 
         // !!! VULNERABILITY: CRYPTOGRAPHIC FAILURE !!!
