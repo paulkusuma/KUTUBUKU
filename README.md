@@ -5,29 +5,44 @@ KUTUBUKU - Vulnerable Web Application
 KUTUBUKU adalah toko buku online sederhana yang dibangun dengan framework Laravel. Aplikasi ini mengandung beberapa kerentanan dari daftar OWASP Top 10 2021 yang dapat dieksploitasi untuk pembelajaran.
 Setup
 
-    Clone Repository
+   🚀 Setup & Installation
+1. Clone Repository
+git clone https://github.com/paulkusuma/KUTUBUKU.git
+cd KUTUBUKU
+2. Install Dependencies
+Backend (Laravel)
+composer install
+Frontend (Vite & Tailwind)
+npm install
+npm run dev
 
-    git clone https://github.com/paulkusuma/KUTUBUKU.gitcd KUTUBUKU
+⚠️ Pastikan sudah menginstall Node.js sebelum menjalankan perintah di atas.
 
-    Install Dependencies
+3. Setup Environment
+cp .env.example .env
+php artisan key:generate
 
-    composer installnpm installnpm run build
+Lalu sesuaikan konfigurasi database di file .env:
 
-    Setup Environment
+DB_DATABASE=kutubuku
+DB_USERNAME=root
+DB_PASSWORD=
+4. Jalankan Migration & Seeder
+php artisan migrate
+php artisan db:seed
+5. Jalankan Aplikasi
 
-    cp .env.example .envphp artisan key:generate
+Buka 2 terminal:
 
-    Sesuaikan konfigurasi database di file .env.
+Terminal 1 (Laravel)
+php artisan serve
+Terminal 2 (Vite)
+npm run dev
+6. Akses Aplikasi
 
-    Run Database Migrations and Seeders
+Buka di browser:
 
-    php artisan migratephp artisan db:seed
-
-    Run Application
-
-    php artisan serve
-
-    Aplikasi akan tersedia di http://127.0.0.1:8000.
+http://127.0.0.1:8000
 
 Dokumentasi Kerentanan
 
