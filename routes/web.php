@@ -103,6 +103,17 @@ Route::get('/api/distributor', function (\Illuminate\Http\Request $request) {
     return response()->json($data[$request->id] ?? []);
 });
 
+Route::get('/internal/delete-book', function (\Illuminate\Http\Request $request) {
+    if ($request->ip() !== '127.0.0.1') {
+        abort(403, 'Forbidden');
+    }
+
+    $id = $request->id;
+
+    \Illuminate\Support\Facades\DB::delete("DELETE FROM books WHERE id = $id");
+
+    return "Book deleted: " . $id;
+});
 // Route untuk memicu error demi demonstrasi A02
 Route::get('/debug-error', function () {
     // Memicu error "Division by zero"

@@ -8,9 +8,7 @@
         </p>
 
         <form method="POST" action="{{ route('distributor.sync') }}">
-            @csrf
-
-            <input type="hidden" name="id" value="1">
+            <input type="hidden" name="url" value="http://kutubuku.test/api/distributor?id=1">
 
             <button class="bg-blue-500 text-white px-4 py-2 rounded">
                 Sync Now

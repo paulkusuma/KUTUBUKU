@@ -13,18 +13,20 @@ class DistributorController extends Controller
 
     public function sync(Request $request)
     {
-        $id = $request->id;
+        // ❗ ambil langsung dari request (bisa dimanipulasi)
+        $url = $request->url;
 
-        // 💣 URL dibuat oleh server (inti SSRF)
-        $url = "http://kutubuku.test/api/distributor?id=" . $id;
+        // fallback default (biar tetap jalan normal)
+        if (!$url) {
+            $url = "http://kutubuku.test/api/distributor?id=1";
+        }
 
-        // 🔥 SSRF terjadi di sini
-        $response = file_get_contents($url);
+        // 🔥 SSRF
+        $response = @file_get_contents($url);
 
-        $data = json_decode($response, true);
 
         return view('distributor.result', [
-            'data' => $data,
+            'data' => $response,
             'url' => $url
         ]);
     }
