@@ -20,12 +20,18 @@ class BookController extends Controller
         $books = collect();
 
         // Hanya jalankan query jika ada input pencarian
-        if ($search) {
-            // SANGAT BERBAHAYA! JANGAN LAKUKAN INI DI PRODUKSI!
-            $query = "SELECT * FROM books WHERE title LIKE '%" . $search . "%' OR author LIKE '%" . $search . "%'";
-            $books = DB::select($query);
-        }
+        // if ($search) {
+        //     // SANGAT BERBAHAYA! JANGAN LAKUKAN INI DI PRODUKSI!
+        //     $query = "SELECT * FROM books WHERE title LIKE '%" . $search . "%' OR author LIKE '%" . $search . "%'";
+        //     $books = DB::select($query);
+        // }
 
+
+        if ($search) {
+            $books = DB::select("SELECT * FROM books WHERE title LIKE '%$search%'");
+        } else {
+            $books = DB::select("SELECT * FROM books");
+        }
         // Jika tidak ada $search, $books akan tetap kosong.
         // Template Blade akan menangani pesan "Belum ada buku tersedia".
 
@@ -49,5 +55,31 @@ class BookController extends Controller
     public function show(Book $book)
     {
         return view('books.show', compact('book'));
+    }
+
+    public function requestForm()
+    {
+        return view('books.request');
+    }
+
+    public function requestStore(Request $request)
+    {
+        $title = $request->title;
+        $author = $request->author;
+        $url = $request->cover_url;
+
+        // validasi minimal (biar terlihat "aman")
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return back()->with('error', 'URL tidak valid');
+        }
+
+        // 💣 SSRF INTI
+        $image = file_get_contents($url);
+
+        // simpan sementara (optional)
+        $path = storage_path('app/public/preview.jpg');
+        file_put_contents($path, $image);
+
+        return back()->with('success', 'Cover berhasil diambil dari URL');
     }
 }

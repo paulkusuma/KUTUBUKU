@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Book;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -62,5 +63,21 @@ class AdminController extends Controller
 
         return back()->with('error', 'Gagal mengunduh update.');
 
+    }
+    public function updateRole(Request $request)
+    {
+        DB::update("
+        UPDATE users SET role = '$request->role'
+        WHERE id = '$request->id'
+    ");
+
+        return back();
+    }
+
+    public function deleteUser($id)
+    {
+        DB::delete("DELETE FROM users WHERE id = $id");
+
+        return back();
     }
 }

@@ -29,16 +29,42 @@
                                 <th class="px-6 py-3">Name</th>
                                 <th class="px-6 py-3">Email</th>
                                 <th class="px-6 py-3">Role</th>
+                                <th class="px-6 py-3">Aksi</th> <!-- TAMBAHAN -->
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($allUsers as $user)
                                 <tr class="bg-white border-b">
-                                    <td class="px-6 py-4">{{ $user->id }}</td>
-                                    <td class="px-6 py-4">{{ $user->name }}</td>
-                                    <td class="px-6 py-4">{{ $user->email }}</td>
-                                    <td class="px-6 py-4 font-semibold">{{ $user->role }}</td>
-                                </tr>
+    <td class="px-6 py-4">{{ $user->id }}</td>
+    <td class="px-6 py-4">{{ $user->name }}</td>
+    <td class="px-6 py-4">{{ $user->email }}</td>
+    <td class="px-6 py-4 font-semibold">{{ $user->role }}</td>
+
+    <td class="px-6 py-4">
+
+        <!-- UPDATE ROLE -->
+        <form action="{{ route('admin.user.updateRole') }}" method="POST" class="mb-2">
+            @csrf
+            <input type="hidden" name="id" value="{{ $user->id }}">
+
+            <select name="role" class="border text-sm">
+                <option value="user" {{ $user->role == 'user' ? 'selected' : '' }}>User</option>
+                <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Admin</option>
+            </select>
+
+            <button class="bg-blue-500 text-white px-2 py-1 text-xs rounded">
+                Update
+            </button>
+        </form>
+
+        <!-- DELETE USER -->
+        <a href="{{ route('admin.user.delete', $user->id) }}"
+           class="bg-red-500 text-white px-2 py-1 text-xs rounded">
+            Hapus
+        </a>
+
+    </td>
+</tr>
                             @endforeach
                         </tbody>
                     </table>

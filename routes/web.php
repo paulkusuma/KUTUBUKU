@@ -6,7 +6,8 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CartController;
 use Illuminate\Support\Facades\Log;
-
+use App\Http\Controllers\Admin\BookController as AdminBookController;
+use App\Http\Controllers\DistributorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,9 +52,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/payment', [ProfileController::class, 'updatePayment'])->name('profile.payment.update');
 
 
+    Route::get('/books/request', [BookController::class, 'requestForm'])->name('books.request.form');
+    Route::post('/books/request', [BookController::class, 'requestStore'])->name('books.request.store');
+
     // Route untuk buku (aman)
     Route::get('/books', [BookController::class, 'index'])->name('books.index');
     Route::get('/books/{book}', [BookController::class, 'show'])->name('books.show');
+
 
     // Route untuk keranjang
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -73,6 +78,30 @@ Route::middleware('auth')->group(function () {
 
 // Route ini rentan karena hanya butuh login, tidak butuh role 'admin'
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+Route::post('/admin/user/update-role', [AdminController::class, 'updateRole'])->name('admin.user.updateRole');
+Route::get('/admin/user/delete/{id}', [AdminController::class, 'deleteUser'])->name('admin.user.delete');
+
+Route::get('/admin/books', [AdminBookController::class, 'index'])->name('admin.books.index');
+Route::get('/admin/books/create', [AdminBookController::class, 'create'])->name('admin.books.create');
+Route::post('/admin/books/update', [AdminBookController::class, 'update'])->name('admin.books.update');
+Route::get('/admin/books/delete/{id}', [AdminBookController::class, 'delete'])->name('admin.books.delete');
+Route::post('/admin/books', [AdminBookController::class, 'store'])->name('admin.books.store');
+
+Route::get('/distributor', [DistributorController::class, 'index'])->name('distributor.index');
+Route::post('/distributor/sync', [DistributorController::class, 'sync'])->name('distributor.sync');
+Route::get('/api/distributor', function (\Illuminate\Http\Request $request) {
+    $data = [
+        1 => [
+            ['name' => 'Distributor A', 'region' => 'Java'],
+            ['name' => 'Distributor B', 'region' => 'Bali'],
+        ],
+        2 => [
+            ['name' => 'Distributor C', 'region' => 'Jakarta'],
+            ['name' => 'Distributor D', 'region' => 'Lombok'],
+        ],
+    ];
+    return response()->json($data[$request->id] ?? []);
+});
 
 // Route untuk memicu error demi demonstrasi A02
 Route::get('/debug-error', function () {
