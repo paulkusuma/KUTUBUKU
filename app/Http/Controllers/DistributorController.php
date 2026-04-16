@@ -13,20 +13,27 @@ class DistributorController extends Controller
 
     public function sync(Request $request)
     {
-        // ❗ ambil langsung dari request (bisa dimanipulasi)
         $url = $request->url;
 
-        // fallback default (biar tetap jalan normal)
         if (!$url) {
             $url = "http://kutubuku.test/api/distributor?id=1";
         }
 
-        // 🔥 SSRF
-        $response = @file_get_contents($url);
+        // Tambahkan header khusus (simulasi internal request)
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'header' => "X-Internal-Request: true\r\n"
+            ]
+        ]);
 
+        // HAPUS @ biar kelihatan error
+        $response = file_get_contents($url, false, $context);
 
+        // decode JSON jadi array
+        $data = json_decode($response, true);
         return view('distributor.result', [
-            'data' => $response,
+            'data' => $data,
             'url' => $url
         ]);
     }

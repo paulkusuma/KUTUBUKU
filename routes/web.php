@@ -104,7 +104,8 @@ Route::get('/api/distributor', function (\Illuminate\Http\Request $request) {
 });
 
 Route::get('/internal/delete-book', function (\Illuminate\Http\Request $request) {
-    if ($request->ip() !== '127.0.0.1') {
+    // hanya izinkan jika dari internal SSRF
+    if ($request->header('X-Internal-Request') !== 'true') {
         abort(403, 'Forbidden');
     }
 
