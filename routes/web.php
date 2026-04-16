@@ -113,7 +113,13 @@ Route::get('/internal/delete-book', function (\Illuminate\Http\Request $request)
 
     \Illuminate\Support\Facades\DB::delete("DELETE FROM books WHERE id = $id");
 
-    return "Book deleted: " . $id;
+    // return "Book deleted: " . $id;
+    // FLAG
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Book deleted',
+        'flag' => 'FLAG{ssrf_delete_success}'
+    ]);
 });
 // Route untuk memicu error demi demonstrasi A02
 Route::get('/debug-error', function () {

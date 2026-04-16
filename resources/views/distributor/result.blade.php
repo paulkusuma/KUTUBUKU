@@ -35,6 +35,11 @@
             @endif
 
         </div>
+        @if(isset($data['flag']))
+    <div class="bg-green-100 text-green-800 p-3 rounded mt-4">
+         <b>{{ $data['flag'] }}</b>
+    </div>
+@endif
 
     </div>
 </x-app-layout>
